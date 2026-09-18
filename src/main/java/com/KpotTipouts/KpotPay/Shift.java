@@ -17,11 +17,11 @@ public class Shift {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private LocalDate date;
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal foodSales;
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal barSales;
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 4, scale = 2, nullable = false)
     private BigDecimal hoursWorked;
     @Enumerated(EnumType.STRING)
     private Role role;

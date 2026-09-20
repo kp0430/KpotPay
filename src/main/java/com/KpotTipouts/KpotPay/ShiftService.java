@@ -1,5 +1,8 @@
 package com.KpotTipouts.KpotPay;
 
+import com.KpotTipouts.KpotPay.DTO.ShiftCreateDTO;
+import com.KpotTipouts.KpotPay.DTO.ShiftPatchDTO;
+import com.KpotTipouts.KpotPay.DTO.ShiftResponseDTO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -7,6 +10,12 @@ import java.math.RoundingMode;
 
 @Service
 public class ShiftService {
+    private final ShiftRepository shiftRepository;
+
+    public ShiftService(ShiftRepository shiftRepository) {
+        this.shiftRepository = shiftRepository;
+    }
+
     // amount you owe to restaurant based off food sales pretty much everything except bar drinks
     private BigDecimal calculateFoodTipOut(Shift shift) {
         return shift.getFoodSales()
@@ -28,6 +37,42 @@ public class ShiftService {
     private BigDecimal calculateTotalTipOut(Shift shift) {
         return calculateFoodTipOut(shift).add(calculateBarTipOut(shift))
                 .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public Shift createShift(ShiftCreateDTO shiftCreateDTO, User user) {
+        Shift shift = new Shift();
+        shift.setDate(shiftCreateDTO.date());
+        shift.setFoodSales(shiftCreateDTO.foodSales() != null ? shiftCreateDTO.foodSales() : BigDecimal.ZERO);
+        shift.setBarSales(shiftCreateDTO.barSales() != null ? shiftCreateDTO.barSales() : BigDecimal.ZERO);
+        shift.setHoursWorked(shiftCreateDTO.hoursWorked());
+        shift.setRole(shiftCreateDTO.role());
+        shift.setUser(user);
+        return shiftRepository.save(shift);
+    }
+
+    public ShiftResponseDTO toResponseDTO(Shift shift) {
+
+        return new ShiftResponseDTO(
+                shift.getId(),
+                shift.getDate(),
+                shift.getFoodSales(),
+                shift.getBarSales(),
+                shift.getHoursWorked(),
+                shift.getRole(),
+                calculateFoodTipOut(shift),
+                calculateBarTipOut(shift),
+                calculateTotalTipOut(shift)
+
+        );
+    }
+    // we are updating the shift with the shiftPatchDTO, if it's not null, patch the shift, if it is, just keep the shift variable the same
+    public Shift applyPatch(Shift shift, ShiftPatchDTO shiftPatchDTO) {
+        shift.setDate(shiftPatchDTO.date() != null ? shiftPatchDTO.date() : shift.getDate());
+        shift.setFoodSales(shiftPatchDTO.foodSales() != null ? shiftPatchDTO.foodSales() : shift.getFoodSales());
+        shift.setBarSales(shiftPatchDTO.barSales() != null ? shiftPatchDTO.barSales() : shift.getBarSales());
+        shift.setHoursWorked(shiftPatchDTO.hoursWorked() != null ? shiftPatchDTO.hoursWorked() : shift.getHoursWorked());
+        shift.setRole(shiftPatchDTO.role() != null ? shiftPatchDTO.role() : shift.getRole());
+        return shiftRepository.save(shift);
     }
 
 }

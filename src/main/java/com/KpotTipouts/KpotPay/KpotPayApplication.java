@@ -30,7 +30,7 @@ public class KpotPayApplication {
 			}
 
 			/*
-			User user = userRepository.findByEmail(email).get();
+			     User user = userRepository.findByEmail(email).get();
 			Shift testShift = new Shift();
 			testShift.setDate(LocalDate.now());
 			testShift.setUser(user);

@@ -1,5 +1,6 @@
 package com.KpotTipouts.KpotPay;
 
+import com.KpotTipouts.KpotPay.DTO.EarningsSummaryDTO;
 import com.KpotTipouts.KpotPay.DTO.ShiftCreateDTO;
 import com.KpotTipouts.KpotPay.DTO.ShiftPatchDTO;
 import com.KpotTipouts.KpotPay.DTO.ShiftResponseDTO;
@@ -7,6 +8,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class ShiftService {
@@ -80,6 +84,41 @@ public class ShiftService {
         shift.setRole(shiftPatchDTO.role() != null ? shiftPatchDTO.role() : shift.getRole());
         shift.setTips(shiftPatchDTO.tips());
         return shiftRepository.save(shift);
+    }
+    public EarningsSummaryDTO getEarningsSummary(User user, LocalDate startDate, LocalDate endDate) {
+        List<ShiftResponseDTO> shiftDTOs = new ArrayList<>();
+        List<Shift> shifts = shiftRepository.findByUserAndDateBetween(user, startDate, endDate);
+        BigDecimal totalFoodSales = BigDecimal.ZERO;
+        BigDecimal totalBarSales = BigDecimal.ZERO;
+        BigDecimal totalTips = BigDecimal.ZERO;
+        BigDecimal totalNetTips = BigDecimal.ZERO;
+        BigDecimal totalFoodTipOut = BigDecimal.ZERO;
+        BigDecimal totalBarTipOut = BigDecimal.ZERO;
+        BigDecimal totalTipOut = BigDecimal.ZERO;
+
+        for(Shift shift : shifts){
+            totalFoodSales = totalFoodSales.add(shift.getFoodSales());
+            totalBarSales = totalBarSales.add(shift.getBarSales());
+            totalFoodTipOut = totalFoodTipOut.add(calculateFoodTipOut(shift));
+            totalBarTipOut = totalBarTipOut.add(calculateBarTipOut(shift));
+            totalTipOut = totalTipOut.add(calculateTotalTipOut(shift));
+            totalTips = totalTips.add(shift.getTips());
+            totalNetTips = totalNetTips.add(calculateNetTip(shift));
+            shiftDTOs.add(toResponseDTO(shift));
+        }
+        return new EarningsSummaryDTO(
+                startDate,
+                endDate,
+                totalFoodSales,
+                totalBarSales,
+                totalFoodTipOut,
+                totalBarTipOut,
+                totalTipOut,
+                totalTips,
+                totalNetTips,
+                shiftDTOs
+        );
+
     }
 
 }

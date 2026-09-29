@@ -6,11 +6,12 @@ import java.util.List;
 
 public record EarningsSummaryDTO(LocalDate startDate,
                                  LocalDate endDate,
-                                 BigDecimal totalFoodSales,
-                                 BigDecimal totalBarSales,
-                                 BigDecimal totalFoodTipOut,
+                                 BigDecimal TotalFoodSales,
+                                 BigDecimal TotalBarSales,
+                                 BigDecimal TotalFoodTipOut,
                                  BigDecimal TotalBarTipOut,
                                  BigDecimal TotalTipOut,
+                                 BigDecimal TotalTips,
+                                 BigDecimal TotalNetTips,
                                  List<ShiftResponseDTO> shifts) {
-
 }

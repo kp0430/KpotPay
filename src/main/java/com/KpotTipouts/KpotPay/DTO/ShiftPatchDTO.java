@@ -11,6 +11,7 @@ public record ShiftPatchDTO(
         @PositiveOrZero BigDecimal foodSales,
         @PositiveOrZero BigDecimal barSales,
         @PositiveOrZero BigDecimal hoursWorked,
-        Role role
+        Role role,
+        @PositiveOrZero BigDecimal tips
 
 ) {}

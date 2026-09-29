@@ -26,7 +26,7 @@ public class ShiftService {
     private BigDecimal calculateBarTipOut(Shift shift) {
         if(shift.getRole().equals(Role.SERVER)){
             return shift.getBarSales()
-                    .multiply(new BigDecimal("0.05"))
+                    .multiply(new BigDecimal("0.10"))
                     .setScale(2, RoundingMode.HALF_UP);
         }
         else {
@@ -38,6 +38,10 @@ public class ShiftService {
         return calculateFoodTipOut(shift).add(calculateBarTipOut(shift))
                 .setScale(2, RoundingMode.HALF_UP);
     }
+    private BigDecimal calculateNetTip(Shift shift) {
+        return shift.getTips().subtract(calculateTotalTipOut(shift))
+                .setScale(2, RoundingMode.HALF_UP);
+    }
 
     public Shift createShift(ShiftCreateDTO shiftCreateDTO, User user) {
         Shift shift = new Shift();
@@ -47,6 +51,7 @@ public class ShiftService {
         shift.setHoursWorked(shiftCreateDTO.hoursWorked());
         shift.setRole(shiftCreateDTO.role());
         shift.setUser(user);
+        shift.setTips(shiftCreateDTO.tips() != null ? shiftCreateDTO.tips() : BigDecimal.ZERO);
         return shiftRepository.save(shift);
     }
 
@@ -61,8 +66,9 @@ public class ShiftService {
                 shift.getRole(),
                 calculateFoodTipOut(shift),
                 calculateBarTipOut(shift),
-                calculateTotalTipOut(shift)
-
+                calculateTotalTipOut(shift),
+                shift.getTips(),
+                calculateNetTip(shift)
         );
     }
     // we are updating the shift with the shiftPatchDTO, if it's not null, patch the shift, if it is, just keep the shift variable the same
@@ -72,6 +78,7 @@ public class ShiftService {
         shift.setBarSales(shiftPatchDTO.barSales() != null ? shiftPatchDTO.barSales() : shift.getBarSales());
         shift.setHoursWorked(shiftPatchDTO.hoursWorked() != null ? shiftPatchDTO.hoursWorked() : shift.getHoursWorked());
         shift.setRole(shiftPatchDTO.role() != null ? shiftPatchDTO.role() : shift.getRole());
+        shift.setTips(shiftPatchDTO.tips());
         return shiftRepository.save(shift);
     }
 

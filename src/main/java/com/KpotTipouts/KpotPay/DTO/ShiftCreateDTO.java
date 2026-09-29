@@ -12,5 +12,6 @@ public record ShiftCreateDTO(
         @PositiveOrZero BigDecimal foodSales,
         @PositiveOrZero BigDecimal barSales,
         @NotNull @PositiveOrZero BigDecimal hoursWorked,
-        @NotNull Role role
+        @NotNull Role role,
+        @PositiveOrZero BigDecimal tips
     ) {}

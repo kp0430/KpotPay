@@ -24,7 +24,6 @@ public class ShiftController {
     }
 
     @PostMapping("/users/{userId}/shifts")
-
     public ResponseEntity<ShiftResponseDTO> createShift(@PathVariable Long userId, @Valid @RequestBody ShiftCreateDTO dto) {
        return userRepository.findById(userId)
                //look up user by id and if they exist, create shift and convert it into response DTO and send it back with 201 status

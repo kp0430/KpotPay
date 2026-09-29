@@ -13,7 +13,9 @@ public record ShiftResponseDTO(
         Role role,
         BigDecimal foodTipOut,
         BigDecimal barTipOut,
-        BigDecimal totalTipOut
+        BigDecimal totalTipOut,
+        BigDecimal tips,
+        BigDecimal netTips
 )     {}
 
 

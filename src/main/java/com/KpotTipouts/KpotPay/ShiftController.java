@@ -70,6 +70,18 @@ public class ShiftController {
             return ResponseEntity.notFound().build();
         }
     }
+    @GetMapping("/users/{userId}/shifts/summary")
+    public ResponseEntity<EarningsSummaryDTO> getEarningsSummary(
+            @PathVariable Long userId,
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate) {
+        return userRepository.findById(userId)
+                //i have a list of shifts now
+                .map(user -> shiftService.getEarningsSummary(user, startDate, endDate))
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
 
 
 }

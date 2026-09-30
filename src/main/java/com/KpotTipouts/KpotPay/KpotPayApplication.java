@@ -32,13 +32,13 @@ public class KpotPayApplication {
 
 			     /*User user = userRepository.findByEmail(email).get();
 			Shift testShift = new Shift();
-			testShift.setDate(LocalDate.now());
+			testShift.setDate(LocalDate.of(2026,9,26));
 			testShift.setUser(user);
 			testShift.setRole(Role.SERVER);
-			testShift.setBarSales(BigDecimal.valueOf(100.23));
-			testShift.setHoursWorked(BigDecimal.valueOf(6.20));
-			testShift.setFoodSales(BigDecimal.valueOf(900.53));
-			testShift.setTips(BigDecimal.valueOf(60.50));
+			testShift.setBarSales(BigDecimal.valueOf(200));
+			testShift.setHoursWorked(BigDecimal.valueOf(6.3));
+			testShift.setFoodSales(BigDecimal.valueOf(1000.50));
+			testShift.setTips(BigDecimal.valueOf(230.14));
 			shiftRepository.save(testShift);
 			*/
 		};

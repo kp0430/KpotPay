@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@CrossOrigin(origins = "http://127.0.0.1:5500/" )
 public class ShiftController {
     private final ShiftService shiftService;
     private final UserRepository userRepository;
@@ -75,8 +76,9 @@ public class ShiftController {
             @PathVariable Long userId,
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate) {
+        //get a user through userId
         return userRepository.findById(userId)
-                //i have a list of shifts now
+                //                                                                                      
                 .map(user -> shiftService.getEarningsSummary(user, startDate, endDate))
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());

@@ -80,8 +80,9 @@ public class   ShiftController {
             @RequestParam LocalDate endDate) {
         //get a user through userId
         return userRepository.findById(userId)
-                //                                                                                      
+                // map user into getEarningsSummary
                 .map(user -> shiftService.getEarningsSummary(user, startDate, endDate))
+                //map earnings summary into ResponseEntity
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

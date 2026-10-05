@@ -1,5 +1,6 @@
 package com.KpotTipouts.KpotPay.Service;
 
+import com.KpotTipouts.KpotPay.DTO.LoginDTO;
 import com.KpotTipouts.KpotPay.DTO.RegisterDTO;
 import com.KpotTipouts.KpotPay.DTO.UserResponseDTO;
 import com.KpotTipouts.KpotPay.Entity.User;
@@ -11,9 +12,11 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    private final JwtService jwtService;
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder =  passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public UserResponseDTO toResponseDTO(User user) {
@@ -27,6 +30,16 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(registerDTO.password()));
 
         return userRepository.save(user);
+    }
+    public String login(LoginDTO loginDTO) {
+        User user = userRepository.findByEmail(loginDTO.email())
+                .orElseThrow(()-> new RuntimeException("Invalid email or password"));
+
+        if (!passwordEncoder.matches(loginDTO.password(), user.getPassword())) {
+            throw new RuntimeException("Invalid email or password");
+        }
+
+        return jwtService.generateToken(user.getEmail());
     }
 
 

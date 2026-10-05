@@ -1,9 +1,12 @@
-package com.KpotTipouts.KpotPay;
+package com.KpotTipouts.KpotPay.Controller;
 
 import com.KpotTipouts.KpotPay.DTO.EarningsSummaryDTO;
 import com.KpotTipouts.KpotPay.DTO.ShiftCreateDTO;
 import com.KpotTipouts.KpotPay.DTO.ShiftPatchDTO;
 import com.KpotTipouts.KpotPay.DTO.ShiftResponseDTO;
+import com.KpotTipouts.KpotPay.Repository.ShiftRepository;
+import com.KpotTipouts.KpotPay.Service.ShiftService;
+import com.KpotTipouts.KpotPay.Repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,11 +14,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "http://127.0.0.1:5500/" )
-public class ShiftController {
+public class   ShiftController {
     private final ShiftService shiftService;
     private final UserRepository userRepository;
     private final ShiftRepository shiftRepository;

@@ -1,12 +1,12 @@
 package com.KpotTipouts.KpotPay;
 
+import com.KpotTipouts.KpotPay.Entity.User;
+import com.KpotTipouts.KpotPay.Repository.ShiftRepository;
+import com.KpotTipouts.KpotPay.Repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @SpringBootApplication
 public class KpotPayApplication {
@@ -30,7 +30,7 @@ public class KpotPayApplication {
 			}
 
 
-			     /*User user = userRepository.findByEmail(email).get();
+			  /*   User user = userRepository.findByEmail(email).get();
 			Shift testShift = new Shift();
 			testShift.setDate(LocalDate.of(2026,9,26));
 			testShift.setUser(user);

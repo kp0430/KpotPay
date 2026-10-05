@@ -1,6 +1,6 @@
 package com.KpotTipouts.KpotPay.DTO;
 
-import com.KpotTipouts.KpotPay.Role;
+import com.KpotTipouts.KpotPay.Entity.Role;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 

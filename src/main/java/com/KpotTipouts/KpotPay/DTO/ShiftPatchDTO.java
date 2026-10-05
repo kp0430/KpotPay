@@ -1,6 +1,6 @@
 package com.KpotTipouts.KpotPay.DTO;
 
-import com.KpotTipouts.KpotPay.Role;
+import com.KpotTipouts.KpotPay.Entity.Role;
 import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;

@@ -1,11 +1,9 @@
-package com.KpotTipouts.KpotPay;
+package com.KpotTipouts.KpotPay.Entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDate;
 
 @Entity
 @Table(name = "users")

@@ -1,4 +1,4 @@
-package com.KpotTipouts.KpotPay;
+package com.KpotTipouts.KpotPay.Entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

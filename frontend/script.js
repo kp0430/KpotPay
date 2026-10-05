@@ -86,7 +86,14 @@ function editShift(id) {
   }
 
   editingId = id;
-  getElement("formTitle").textContent = `Editing shift #${id}`;
+  const shiftDate = new Date(`${shift.date}T00:00:00`);
+  const formattedDate = shiftDate.toLocaleDateString("en-US", {
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+  getElement("formTitle").textContent = `Editing shift #${id} where you worked on ${formattedDate}`;
   getElement("f-date").value = shift.date;
   getElement("f-role").value = shift.role;
   getElement("f-hours").value = shift.hoursWorked;

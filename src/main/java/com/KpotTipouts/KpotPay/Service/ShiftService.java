@@ -1,9 +1,13 @@
-package com.KpotTipouts.KpotPay;
+package com.KpotTipouts.KpotPay.Service;
 
 import com.KpotTipouts.KpotPay.DTO.EarningsSummaryDTO;
 import com.KpotTipouts.KpotPay.DTO.ShiftCreateDTO;
 import com.KpotTipouts.KpotPay.DTO.ShiftPatchDTO;
 import com.KpotTipouts.KpotPay.DTO.ShiftResponseDTO;
+import com.KpotTipouts.KpotPay.Entity.Role;
+import com.KpotTipouts.KpotPay.Entity.Shift;
+import com.KpotTipouts.KpotPay.Repository.ShiftRepository;
+import com.KpotTipouts.KpotPay.Entity.User;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -33,6 +37,7 @@ public class ShiftService {
                     .multiply(new BigDecimal("0.10"))
                     .setScale(2, RoundingMode.HALF_UP);
         }
+        // might change this later on to return barsales * 10 percent added on to net tips.
         else {
             return BigDecimal.ZERO;
         }

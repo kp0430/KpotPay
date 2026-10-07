@@ -1,5 +1,6 @@
 package com.KpotTipouts.KpotPay.Controller;
 
+import com.KpotTipouts.KpotPay.DTO.LoginDTO;
 import com.KpotTipouts.KpotPay.DTO.RegisterDTO;
 import com.KpotTipouts.KpotPay.DTO.UserResponseDTO;
 import com.KpotTipouts.KpotPay.Entity.User;
@@ -23,6 +24,12 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> register(@Valid @RequestBody RegisterDTO dto) {
         User user = userService.registerUser(dto);
         return ResponseEntity.ok(userService.toResponseDTO(user));
+    }
+
+    @PostMapping("/auth/login")
+    public ResponseEntity<String> login(@Valid @RequestBody LoginDTO dto) {
+        String token =  userService.login(dto);
+        return  ResponseEntity.ok(token);
     }
 
 

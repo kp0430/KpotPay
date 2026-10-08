@@ -15,8 +15,12 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
+
    public String generateToken(String email) {
-       SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+       SecretKey key = getSigningKey();
        return Jwts
                .builder()
                .subject(email)
@@ -24,5 +28,14 @@ public class JwtService {
                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
                .signWith(key)
                .compact();
+    }
+    public String extractEmail(String token) {
+        SecretKey key = getSigningKey();
+        return Jwts
+                .parser()
+               .verifyWith(key)
+               .build()
+               .parseSignedClaims(token)
+               .getPayload().getSubject();
     }
 }

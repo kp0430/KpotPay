@@ -8,6 +8,8 @@ import com.KpotTipouts.KpotPay.Repository.UserRepository;
 import com.KpotTipouts.KpotPay.Service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,7 +33,13 @@ public class UserController {
         String token =  userService.login(dto);
         return  ResponseEntity.ok(token);
     }
-
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDTO> getCurrentUser(Authentication authentication) {
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
+                .map(user -> ResponseEntity.ok(userService.toResponseDTO((user))))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 
 
 }

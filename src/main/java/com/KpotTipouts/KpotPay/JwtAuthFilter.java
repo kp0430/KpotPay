@@ -36,7 +36,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 String email = jwtService.extractEmail(token);
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(email, null, List.of());
                 SecurityContextHolder.getContext().setAuthentication(auth);
-            } catch (JwtException e) {
+            } catch (JwtException | IllegalArgumentException e) {
                 // invalid or expired token: leave the request unauthenticated
             }
         }

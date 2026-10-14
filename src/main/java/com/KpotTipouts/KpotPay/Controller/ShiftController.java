@@ -1,22 +1,19 @@
 package com.KpotTipouts.KpotPay.Controller;
 
-import com.KpotTipouts.KpotPay.DTO.EarningsSummaryDTO;
-import com.KpotTipouts.KpotPay.DTO.ShiftCreateDTO;
-import com.KpotTipouts.KpotPay.DTO.ShiftPatchDTO;
-import com.KpotTipouts.KpotPay.DTO.ShiftResponseDTO;
+import com.KpotTipouts.KpotPay.DTO.*;
 import com.KpotTipouts.KpotPay.Repository.ShiftRepository;
 import com.KpotTipouts.KpotPay.Service.ShiftService;
 import com.KpotTipouts.KpotPay.Repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://127.0.0.1:5500/" )
 public class   ShiftController {
     private final ShiftService shiftService;
     private final UserRepository userRepository;
@@ -28,26 +25,26 @@ public class   ShiftController {
         this.shiftRepository = shiftRepository;
     }
 
-    @PostMapping("/users/{userId}/shifts")
-    public ResponseEntity<ShiftResponseDTO> createShift(@PathVariable Long userId, @Valid @RequestBody ShiftCreateDTO dto) {
-        return userRepository.findById(userId)
-                //look up user by id and if they exist, create shift and convert it into response DTO and send it back with 201 status
+    @PostMapping("/shifts")
+    public ResponseEntity<ShiftResponseDTO> createShift(Authentication authentication, @Valid @RequestBody ShiftCreateDTO dto) {
+        return userRepository.findByEmail(authentication.getName())
+                //look up user by email and if they exist, create shift and convert it into response DTO and send it back with 201 status
                 .map(user -> ResponseEntity.status(HttpStatus.CREATED).body(shiftService.toResponseDTO(shiftService.createShift(dto, user))))
-                // if findById is empty, return 404 not found instead
+                // if findByEmail is empty, return 404 not found instead
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/shifts/{shiftId}")
-    public ResponseEntity<ShiftResponseDTO> getShiftById(@PathVariable Long shiftId) {
-        return shiftRepository.findById(shiftId)
-                //if shift found in database, convert into responseDTO and send it back with 200 OK response
+    public ResponseEntity<ShiftResponseDTO> getShiftById(@PathVariable Long shiftId, Authentication authentication) {
+        return userRepository.findByEmail(authentication.getName())
+                .flatMap(user -> shiftRepository.findByIdAndUser(shiftId,user))
                 .map(shift -> ResponseEntity.ok(shiftService.toResponseDTO(shift)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/users/{userId}/shifts")
-    public ResponseEntity<List<ShiftResponseDTO>> getAllShiftsForUser(@PathVariable Long userId) {
-        return userRepository.findById(userId)
+    @GetMapping("/shifts")
+    public ResponseEntity<List<ShiftResponseDTO>> getAllShiftsForUser(Authentication authentication) {
+        return userRepository.findByEmail(authentication.getName())
                 .map(user -> shiftRepository.findByUser(user).stream()
                         .map(shiftService::toResponseDTO)
                         .toList())
@@ -56,8 +53,9 @@ public class   ShiftController {
     }
 
     @PatchMapping("/shifts/{shiftId}")
-    public ResponseEntity<ShiftResponseDTO> patchShift(@PathVariable Long shiftId, @Valid @RequestBody ShiftPatchDTO dto) {
-        return shiftRepository.findById(shiftId)
+    public ResponseEntity<ShiftResponseDTO> patchShift(@PathVariable Long shiftId, @Valid @RequestBody ShiftPatchDTO dto, Authentication authentication) {
+        return userRepository.findByEmail(authentication.getName())
+                .flatMap(user -> shiftRepository.findByIdAndUser(shiftId,user))
                 .map(shift -> shiftService.applyPatch(shift, dto))
                 .map(shiftService::toResponseDTO)
                 .map(ResponseEntity::ok)
@@ -65,21 +63,22 @@ public class   ShiftController {
     }
 
     @DeleteMapping("/shifts/{shiftId}")
-    public ResponseEntity<Void> deleteShift(@PathVariable Long shiftId) {
-        if (shiftRepository.existsById(shiftId)) {
-            shiftRepository.deleteById(shiftId);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Void> deleteShift(@PathVariable Long shiftId, Authentication authentication) {
+        return userRepository.findByEmail(authentication.getName())
+                .flatMap(user -> shiftRepository.findByIdAndUser(shiftId,user))
+                .map(shift -> {
+                    shiftRepository.delete(shift);
+                    return ResponseEntity.noContent().<Void>build();
+                })
+                .orElseGet(()-> ResponseEntity.notFound().build());
     }
-    @GetMapping("/users/{userId}/shifts/summary")
+    @GetMapping("/shifts/summary")
     public ResponseEntity<EarningsSummaryDTO> getEarningsSummary(
-            @PathVariable Long userId,
+            Authentication authentication,
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate) {
         //get a user through userId
-        return userRepository.findById(userId)
+        return userRepository.findByEmail(authentication.getName())
                 // map user into getEarningsSummary
                 .map(user -> shiftService.getEarningsSummary(user, startDate, endDate))
                 //map earnings summary into ResponseEntity

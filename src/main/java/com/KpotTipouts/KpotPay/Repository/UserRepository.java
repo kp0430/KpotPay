@@ -1,5 +1,6 @@
 package com.KpotTipouts.KpotPay.Repository;
 
+import com.KpotTipouts.KpotPay.Entity.Shift;
 import com.KpotTipouts.KpotPay.Entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 

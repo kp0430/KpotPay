@@ -23,7 +23,7 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // any endpoint in auth, like login or register will always be permitted
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/**","/error").permitAll()
                         // anything else will need authentication
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

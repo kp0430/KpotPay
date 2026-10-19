@@ -37,7 +37,7 @@ public class ShiftService {
                     .multiply(new BigDecimal("0.10"))
                     .setScale(2, RoundingMode.HALF_UP);
         }
-        // might change this later on to return barsales * 10 percent added on to net tips.
+        // might change this later on to return bar sales * 10 percent added on to net tips.
         else {
             return BigDecimal.ZERO;
         }

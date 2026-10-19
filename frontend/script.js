@@ -1,62 +1,153 @@
 const API_BASE = "http://localhost:8080";
+
+let token = localStorage.getItem("token");
 let currentShifts = [];
 let editingId = null;
+let authMode = "login";
 
-function money(value) {
-  return Number(value ?? 0).toFixed(2);
+function money(n) {
+  return Number(n ?? 0).toFixed(2);
 }
 
-function moneyClass(value) {
-  return Number(value) < 0 ? "neg" : "pos";
+function moneyClass(n) {
+  return Number(n) < 0 ? "neg" : "pos";
 }
 
-function getElement(id) {
+function $(id) {
   return document.getElementById(id);
 }
 
-function setStatus(element, message, type) {
-  element.textContent = message;
-  element.className = type ? `status ${type}` : "status";
+// Every request to a protected endpoint goes through here so the token is always attached.
+async function api(path, options = {}) {
+  const headers = { ...(options.headers || {}) };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+
+  if (res.status === 401 || res.status === 403) {
+    logout("Session expired. Please log in again.");
+    throw new Error("Not authorized");
+  }
+
+  return res;
 }
 
-function getShiftPayload() {
-  return {
-    date: getElement("f-date").value || null,
-    role: getElement("f-role").value,
-    hoursWorked: getElement("f-hours").value || null,
-    foodSales: getElement("f-food").value || null,
-    barSales: getElement("f-bar").value || null,
-    tips: getElement("f-tips").value || null,
-  };
+function showApp(show) {
+  $("authView").style.display = show ? "none" : "block";
+  $("appView").style.display = show ? "block" : "none";
+}
+
+function toggleAuthMode() {
+  authMode = authMode === "login" ? "register" : "login";
+  const reg = authMode === "register";
+
+  $("authTitle").textContent = reg ? "Create account" : "Log in";
+  $("authSubmit").textContent = reg ? "Register" : "Log in";
+  $("authToggle").textContent = reg ? "Have an account? Log in" : "Need an account? Register";
+  $("nameRow").style.display = reg ? "block" : "none";
+  $("authStatus").textContent = "";
+}
+
+async function submitAuth() {
+  const email = $("a-email").value;
+  const password = $("a-password").value;
+  const name = $("a-name").value;
+  const statusEl = $("authStatus");
+
+  statusEl.className = "status";
+  statusEl.textContent = "Working...";
+
+  const post = (path, body) =>
+    fetch(`${API_BASE}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+  try {
+    if (authMode === "register") {
+      const registrationResponse = await post("/auth/register", { name, email, password });
+      if (!registrationResponse.ok) {
+        throw new Error("Registration failed. Check your details; the email may already be registered.");
+      }
+    }
+
+    const loginResponse = await post("/auth/login", { email, password });
+    if (!loginResponse.ok) {
+      throw new Error("Invalid email or password.");
+    }
+
+    token = (await loginResponse.text()).trim();
+    localStorage.setItem("token", token);
+    $("a-password").value = "";
+    statusEl.textContent = "";
+    init();
+  } catch (err) {
+    statusEl.textContent = err.message.includes("fetch") ? "Can't reach the server." : err.message;
+    statusEl.className = "status error";
+  }
+}
+
+function logout(message) {
+  token = null;
+  localStorage.removeItem("token");
+  currentShifts = [];
+  resetForm();
+  $("shiftsBody").innerHTML = "";
+  $("summaryResult").innerHTML = "";
+  showApp(false);
+
+  const statusEl = $("authStatus");
+  statusEl.textContent = typeof message === "string" ? message : "";
+  statusEl.className = "status error";
+}
+
+async function init() {
+  if (!token) {
+    showApp(false);
+    return;
+  }
+
+  try {
+    const res = await api("/me");
+    if (!res.ok) {
+      throw new Error("Could not load your account.");
+    }
+
+    const me = await res.json();
+    $("whoami").textContent = `Signed in as ${me.name} (${me.email})`;
+    showApp(true);
+    loadShifts();
+  } catch (err) {
+    showApp(false);
+  }
 }
 
 async function loadShifts() {
-  const userId = getElement("userId").value;
-  const statusEl = getElement("userStatus");
-
-  setStatus(statusEl, "Loading...", "");
+  const statusEl = $("listStatus");
 
   try {
-    const response = await fetch(`${API_BASE}/users/${userId}/shifts`);
-
-    if (!response.ok) {
-      throw new Error(response.status === 404 ? "No user with that ID" : "Request failed");
+    const res = await api("/shifts");
+    if (!res.ok) {
+      throw new Error("Could not load shifts.");
     }
 
-    currentShifts = await response.json();
+    currentShifts = await res.json();
     renderShifts();
-    setStatus(statusEl, `Loaded ${currentShifts.length} shift(s).`, "ok");
-  } catch (error) {
-    setStatus(statusEl, `${error.message} — is the backend running?`, "error");
+    statusEl.textContent = "";
+  } catch (err) {
+    statusEl.textContent = err.message;
+    statusEl.className = "status error";
   }
 }
 
 function renderShifts() {
-  const body = getElement("shiftsBody");
-  const empty = getElement("shiftsEmpty");
-
+  const body = $("shiftsBody");
   body.innerHTML = "";
-  empty.classList.toggle("hidden", currentShifts.length > 0);
+  $("shiftsEmpty").style.display = currentShifts.length ? "none" : "block";
 
   currentShifts.forEach((shift) => {
     const row = document.createElement("tr");
@@ -80,75 +171,65 @@ function renderShifts() {
 
 function editShift(id) {
   const shift = currentShifts.find((item) => item.id === id);
-
   if (!shift) {
     return;
   }
 
   editingId = id;
-  const shiftDate = new Date(`${shift.date}T00:00:00`);
-  const formattedDate = shiftDate.toLocaleDateString("en-US", {
-  weekday: "short",
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-  getElement("formTitle").textContent = `Editing shift #${id} where you worked on ${formattedDate}`;
-  getElement("f-date").value = shift.date;
-  getElement("f-role").value = shift.role;
-  getElement("f-hours").value = shift.hoursWorked;
-  getElement("f-food").value = shift.foodSales;
-  getElement("f-bar").value = shift.barSales;
-  getElement("f-tips").value = shift.tips;
-  getElement("submitBtn").textContent = "Save changes";
-  getElement("cancelBtn").classList.remove("hidden");
+  $("formTitle").textContent = `Editing shift #${id}`;
+  $("f-date").value = shift.date;
+  $("f-role").value = shift.role;
+  $("f-hours").value = shift.hoursWorked;
+  $("f-food").value = shift.foodSales;
+  $("f-bar").value = shift.barSales;
+  $("f-tips").value = shift.tips;
+  $("submitBtn").textContent = "Save changes";
+  $("cancelBtn").style.display = "inline-block";
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function resetForm() {
   editingId = null;
-  getElement("formTitle").textContent = "Log a shift";
-
+  $("formTitle").textContent = "Log a shift";
   ["f-date", "f-hours", "f-food", "f-bar", "f-tips"].forEach((id) => {
-    getElement(id).value = "";
+    $(id).value = "";
   });
-
-  getElement("f-role").value = "SERVER";
-  getElement("submitBtn").textContent = "Save shift";
-  getElement("cancelBtn").classList.add("hidden");
+  $("f-role").value = "SERVER";
+  $("submitBtn").textContent = "Save shift";
+  $("cancelBtn").style.display = "none";
 }
 
 async function submitShift() {
-  const userId = getElement("userId").value;
-  const statusEl = getElement("formStatus");
-  const payload = getShiftPayload();
+  const statusEl = $("formStatus");
+  const body = {
+    date: $("f-date").value || null,
+    role: $("f-role").value,
+    hoursWorked: $("f-hours").value || null,
+    foodSales: $("f-food").value || null,
+    barSales: $("f-bar").value || null,
+    tips: $("f-tips").value || null,
+  };
 
   try {
-    let response;
+    const res = await api(editingId ? `/shifts/${editingId}` : "/shifts", {
+      method: editingId ? "PATCH" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
 
-    if (editingId) {
-      response = await fetch(`${API_BASE}/shifts/${editingId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } else {
-      response = await fetch(`${API_BASE}/users/${userId}/shifts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    if (!res.ok) {
+      throw new Error(
+        res.status === 404 ? "Shift not found." : "Save failed. Check every field is valid."
+      );
     }
 
-    if (!response.ok) {
-      throw new Error("Save failed — check every field is valid.");
-    }
-
-    setStatus(statusEl, editingId ? "Shift updated." : "Shift saved.", "ok");
+    statusEl.textContent = editingId ? "Shift updated." : "Shift saved.";
+    statusEl.className = "status ok";
     resetForm();
     loadShifts();
-  } catch (error) {
-    setStatus(statusEl, error.message, "error");
+  } catch (err) {
+    statusEl.textContent = err.message;
+    statusEl.className = "status error";
   }
 }
 
@@ -158,62 +239,56 @@ async function deleteShift(id) {
   }
 
   try {
-    const response = await fetch(`${API_BASE}/shifts/${id}`, { method: "DELETE" });
-
-    if (!response.ok) {
+    const res = await api(`/shifts/${id}`, { method: "DELETE" });
+    if (!res.ok) {
       throw new Error("Delete failed.");
     }
-
     loadShifts();
-  } catch (error) {
-    alert(error.message);
+  } catch (err) {
+    alert(err.message);
   }
 }
 
 async function getSummary() {
-  const userId = getElement("userId").value;
-  const start = getElement("s-start").value;
-  const end = getElement("s-end").value;
-  const statusEl = getElement("summaryStatus");
-  const resultEl = getElement("summaryResult");
+  const start = $("s-start").value;
+  const end = $("s-end").value;
+  const statusEl = $("summaryStatus");
+  const resultEl = $("summaryResult");
 
   if (!start || !end) {
-    setStatus(statusEl, "Pick both dates.", "error");
+    statusEl.textContent = "Pick both dates.";
+    statusEl.className = "status error";
     return;
   }
 
-  setStatus(statusEl, "Calculating...", "");
+  statusEl.textContent = "Calculating...";
+  statusEl.className = "status";
 
   try {
-    const response = await fetch(
-      `${API_BASE}/users/${userId}/shifts/summary?startDate=${start}&endDate=${end}`
-    );
-
-    if (!response.ok) {
+    const res = await api(`/shifts/summary?startDate=${start}&endDate=${end}`);
+    if (!res.ok) {
       throw new Error("Request failed.");
     }
 
-    const data = await response.json();
-    setStatus(statusEl, "", "");
-
+    const data = await res.json();
+    statusEl.textContent = "";
     resultEl.innerHTML = `
       <div class="ticket">
         <h3>${data.startDate} → ${data.endDate}</h3>
-        <div class="line"><span>Food sales</span><span>${money(data.TotalFoodSales)}</span></div>
-        <div class="line"><span>Bar sales</span><span>${money(data.TotalBarSales)}</span></div>
-        <div class="line"><span>Tips earned</span><span>${money(data.TotalTips)}</span></div>
-        <div class="line money neg"><span>Food tip-out</span><span>-${money(data.TotalFoodTipOut)}</span></div>
-        <div class="line money neg"><span>Bar tip-out</span><span>-${money(data.TotalBarTipOut)}</span></div>
-        <div class="line total ${moneyClass(data.TotalNetTips)}">
-          <span>You keep</span>
-          <span>${money(data.TotalNetTips)}</span>
-        </div>
+        <div class="line"><span>Food sales</span><span>${money(data.totalFoodSales)}</span></div>
+        <div class="line"><span>Bar sales</span><span>${money(data.totalBarSales)}</span></div>
+        <div class="line"><span>Tips earned</span><span>${money(data.totalTips)}</span></div>
+        <div class="line money neg"><span>Food tip-out</span><span>-${money(data.totalFoodTipOut)}</span></div>
+        <div class="line money neg"><span>Bar tip-out</span><span>-${money(data.totalBarTipOut)}</span></div>
+        <div class="line total ${moneyClass(data.totalNetTips)}"><span>You keep</span><span>${money(data.totalNetTips)}</span></div>
         <p class="sub" style="margin-top:1rem;">${data.shifts.length} shift(s) in this range.</p>
       </div>
     `;
-  } catch (error) {
-    setStatus(statusEl, error.message, "error");
+  } catch (err) {
+    statusEl.textContent = err.message;
+    statusEl.className = "status error";
   }
 }
 
 resetForm();
+init();

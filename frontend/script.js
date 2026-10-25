@@ -1,4 +1,4 @@
-const API_BASE = "kpotpay-production.up.railway.app";
+const API_BASE = "https://kpotpay-production.up.railway.app";
 let token = localStorage.getItem("token");
 let currentShifts = [];
 let editingId = null;

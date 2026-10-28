@@ -219,12 +219,12 @@ async function getSummary(){
     resultEl.innerHTML = `
       <div class="ticket">
         <h3>${d.startDate} → ${d.endDate}</h3>
-        <div class="line"><span>Food sales</span><span>${money(d.totalFoodSales)}</span></div>
-        <div class="line"><span>Bar sales</span><span>${money(d.totalBarSales)}</span></div>
-        <div class="line"><span>Tips earned</span><span>${money(d.totalTips)}</span></div>
-        <div class="line money neg"><span>Food tip-out</span><span>-${money(d.totalFoodTipOut)}</span></div>
-        <div class="line money neg"><span>Bar tip-out</span><span>-${money(d.totalBarTipOut)}</span></div>
-        <div class="line total ${moneyClass(d.totalNetTips)}"><span>You keep</span><span>${money(d.totalNetTips)}</span></div>
+        <div class="line"><span>Food sales</span><span>${money(d.TotalFoodSales)}</span></div>
+        <div class="line"><span>Bar sales</span><span>${money(d.TotalBarSales)}</span></div>
+        <div class="line"><span>Tips earned</span><span>${money(d.TotalTips)}</span></div>
+        <div class="line money neg"><span>Food tip-out</span><span>-${money(d.TotalFoodTipOut)}</span></div>
+        <div class="line money neg"><span>Bar tip-out</span><span>-${money(d.TotalBarTipOut)}</span></div>
+        <div class="line total ${moneyClass(d.totalNetTips)}"><span>You keep</span><span>${money(d.TotalNetTips)}</span></div>
         <p class="sub" style="margin-top:1rem;">${d.shifts.length} shift(s) in this range.</p>
       </div>`;
   }catch(err){

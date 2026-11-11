@@ -1,4 +1,4 @@
-const API_BASE = "https://kpotpay-production.up.railway.app";
+const API_BASE = "http://localhost:8080";
 let token = localStorage.getItem("token");
 let currentShifts = [];
 let editingId = null;
@@ -7,6 +7,13 @@ let authMode = "login";
 function money(n){ return Number(n ?? 0).toFixed(2); }
 function moneyClass(n){ return Number(n) < 0 ? "neg" : "pos"; }
 function $(id){ return document.getElementById(id); }
+
+// the live "Food total" is only a display; each category is sent to the backend separately
+const FOOD_IDS = ["f-kl", "f-kd", "f-al", "f-ad"];
+function toCents(v){ return Math.round((parseFloat(v) || 0) * 100); }   // whole cents avoid float drift
+function foodTotalCents(){ return FOOD_IDS.reduce((sum, id) => sum + toCents($(id).value), 0); }
+function updateFoodTotal(){ $("foodTotal").textContent = (foodTotalCents() / 100).toFixed(2); }
+FOOD_IDS.forEach(id => $(id).addEventListener("input", updateFoodTotal));
 
 // every request to a protected endpoint goes through here so the token is always attached
 async function api(path, options = {}){
@@ -133,7 +140,11 @@ function editShift(id){
   $("f-date").value = s.date;
   $("f-role").value = s.role;
   $("f-hours").value = s.hoursWorked;
-  $("f-food").value = s.foodSales;
+  $("f-kl").value = s.kidsLunchSales;
+  $("f-kd").value = s.kidsDinnerSales;
+  $("f-al").value = s.adultLunchSales;
+  $("f-ad").value = s.adultDinnerSales;
+  updateFoodTotal();
   $("f-bar").value = s.barSales;
   $("f-tips").value = s.tips;
   $("submitBtn").textContent = "Save changes";
@@ -144,7 +155,8 @@ function editShift(id){
 function resetForm(){
   editingId = null;
   $("formTitle").textContent = "Log a shift";
-  ["f-date","f-hours","f-food","f-bar","f-tips"].forEach(id => $(id).value = "");
+  ["f-date","f-hours","f-bar","f-tips", ...FOOD_IDS].forEach(id => $(id).value = "");
+  updateFoodTotal();
   $("f-role").value = "SERVER";
   $("submitBtn").textContent = "Save shift";
   $("cancelBtn").style.display = "none";
@@ -156,9 +168,12 @@ async function submitShift(){
     date: $("f-date").value || null,
     role: $("f-role").value,
     hoursWorked: $("f-hours").value || null,
-    foodSales: $("f-food").value || null,
-    barSales: $("f-bar").value || null,
-    tips: $("f-tips").value || null,
+    kidsLunchSales: $("f-kl").value || "0",
+    kidsDinnerSales: $("f-kd").value || "0",
+    adultLunchSales: $("f-al").value || "0",
+    adultDinnerSales: $("f-ad").value || "0",
+    barSales: $("f-bar").value || "0",
+    tips: $("f-tips").value || "0",
   };
 
   // quick checks before sending; the backend still validates everything
@@ -170,7 +185,8 @@ async function submitShift(){
     statusEl.className = "status error";
     return;
   }
-  const amounts = [body.hoursWorked, body.foodSales, body.barSales, body.tips];
+  const amounts = [body.hoursWorked, body.barSales, body.tips,
+    body.kidsLunchSales, body.kidsDinnerSales, body.adultLunchSales, body.adultDinnerSales];
   if(amounts.some(v => v !== null && Number(v) < 0)){
     statusEl.textContent = "Amounts can't be negative.";
     statusEl.className = "status error";

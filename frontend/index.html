@@ -36,12 +36,21 @@
       <div class="row3">
         <div><label for="f-date">Date</label><input id="f-date" type="date"></div>
         <div><label for="f-role">Role</label><select id="f-role"><option value="SERVER">Server</option><option value="BARTENDER">Bartender</option></select></div>
-        <div><label for="f-hours">Hours worked</label><input id="f-hours" type="number" step="0.01" placeholder="0"></div>
+        <div><label for="f-hours">Hours worked</label><input id="f-hours" type="number" step="0.01" placeholder="6.5"></div>
       </div>
-      <div class="row3">
-        <div><label for="f-food">Food sales</label><input id="f-food" type="number" step="0.01" placeholder="leave blank if 0"></div>
+      <div id="foodCategories">
+        <label>Food sales</label>
+        <div class="row4">
+          <div><label for="f-kl">Kids lunch</label><input id="f-kl" type="number" step="0.01" min="0" placeholder="0.00"></div>
+          <div><label for="f-kd">Kids dinner</label><input id="f-kd" type="number" step="0.01" min="0" placeholder="0.00"></div>
+          <div><label for="f-al">Adult lunch</label><input id="f-al" type="number" step="0.01" min="0" placeholder="0.00"></div>
+          <div><label for="f-ad">Adult dinner</label><input id="f-ad" type="number" step="0.01" min="0" placeholder="0.00"></div>
+        </div>
+        <div class="foodtotal">Food total: <span id="foodTotal">0.00</span></div>
+      </div>
+      <div class="row">
         <div><label for="f-bar">Bar sales</label><input id="f-bar" type="number" step="0.01" placeholder="leave blank if 0"></div>
-        <div><label for="f-tips">Tips</label><input id="f-tips" type="number" step="0.01" placeholder="Credit + Cash"></div>
+        <div><label for="f-tips">Tips</label><input id="f-tips" type="number" step="0.01" placeholder="0.00"></div>
       </div>
       <div style="display:flex;gap:.6rem;">
         <button onclick="submitShift()" id="submitBtn">Save shift</button>

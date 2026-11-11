@@ -8,7 +8,10 @@ import java.time.LocalDate;
 
 public record ShiftPatchDTO(
         LocalDate date,
-        @PositiveOrZero BigDecimal foodSales,
+        @PositiveOrZero BigDecimal kidsLunchSales,
+        @PositiveOrZero BigDecimal kidsDinnerSales,
+        @PositiveOrZero BigDecimal adultLunchSales,
+        @PositiveOrZero BigDecimal adultDinnerSales,
         @PositiveOrZero BigDecimal barSales,
         @PositiveOrZero BigDecimal hoursWorked,
         Role role,

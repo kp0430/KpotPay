@@ -9,7 +9,10 @@ import java.time.LocalDate;
 
 public record ShiftCreateDTO(
         @NotNull LocalDate date,
-        @PositiveOrZero BigDecimal foodSales,
+        @PositiveOrZero BigDecimal kidsLunchSales,
+        @PositiveOrZero BigDecimal kidsDinnerSales,
+        @PositiveOrZero BigDecimal adultLunchSales,
+        @PositiveOrZero BigDecimal adultDinnerSales,
         @PositiveOrZero BigDecimal barSales,
         @NotNull @PositiveOrZero BigDecimal hoursWorked,
         @NotNull Role role,

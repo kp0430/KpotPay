@@ -10,6 +10,13 @@ function money(n){ return Number(n ?? 0).toFixed(2); }
 function moneyClass(n){ return Number(n) < 0 ? "neg" : "pos"; }
 function $(id){ return document.getElementById(id); }
 
+// the live "Food total" is only a display; each category is sent to the backend separately
+const FOOD_IDS = ["f-kl", "f-kd", "f-al", "f-ad"];
+function toCents(v){ return Math.round((parseFloat(v) || 0) * 100); }   // whole cents avoid float drift
+function foodTotalCents(){ return FOOD_IDS.reduce((sum, id) => sum + toCents($(id).value), 0); }
+function updateFoodTotal(){ $("foodTotal").textContent = (foodTotalCents() / 100).toFixed(2); }
+FOOD_IDS.forEach(id => $(id).addEventListener("input", updateFoodTotal));
+
 // every request to a protected endpoint goes through here so the token is always attached
 async function api(path, options = {}){
   const headers = { ...(options.headers || {}) };
@@ -135,7 +142,11 @@ function editShift(id){
   $("f-date").value = s.date;
   $("f-role").value = s.role;
   $("f-hours").value = s.hoursWorked;
-  $("f-food").value = s.foodSales;
+  $("f-kl").value = s.kidsLunchSales;
+  $("f-kd").value = s.kidsDinnerSales;
+  $("f-al").value = s.adultLunchSales;
+  $("f-ad").value = s.adultDinnerSales;
+  updateFoodTotal();
   $("f-bar").value = s.barSales;
   $("f-tips").value = s.tips;
   $("submitBtn").textContent = "Save changes";
@@ -146,7 +157,8 @@ function editShift(id){
 function resetForm(){
   editingId = null;
   $("formTitle").textContent = "Log a shift";
-  ["f-date","f-hours","f-food","f-bar","f-tips"].forEach(id => $(id).value = "");
+  ["f-date","f-hours","f-bar","f-tips", ...FOOD_IDS].forEach(id => $(id).value = "");
+  updateFoodTotal();
   $("f-role").value = "SERVER";
   $("submitBtn").textContent = "Save shift";
   $("cancelBtn").style.display = "none";
@@ -158,9 +170,12 @@ async function submitShift(){
     date: $("f-date").value || null,
     role: $("f-role").value,
     hoursWorked: $("f-hours").value || null,
-    foodSales: $("f-food").value || null,
-    barSales: $("f-bar").value || null,
-    tips: $("f-tips").value || null,
+    kidsLunchSales: $("f-kl").value || "0",
+    kidsDinnerSales: $("f-kd").value || "0",
+    adultLunchSales: $("f-al").value || "0",
+    adultDinnerSales: $("f-ad").value || "0",
+    barSales: $("f-bar").value || "0",
+    tips: $("f-tips").value || "0",
   };
 
   // quick checks before sending; the backend still validates everything
@@ -172,7 +187,8 @@ async function submitShift(){
     statusEl.className = "status error";
     return;
   }
-  const amounts = [body.hoursWorked, body.foodSales, body.barSales, body.tips];
+  const amounts = [body.hoursWorked, body.barSales, body.tips,
+    body.kidsLunchSales, body.kidsDinnerSales, body.adultLunchSales, body.adultDinnerSales];
   if(amounts.some(v => v !== null && Number(v) < 0)){
     statusEl.textContent = "Amounts can't be negative.";
     statusEl.className = "status error";
@@ -221,12 +237,12 @@ async function getSummary(){
     resultEl.innerHTML = `
       <div class="ticket">
         <h3>${d.startDate} → ${d.endDate}</h3>
-        <div class="line"><span>Food sales</span><span>${money(d.totalFoodSales)}</span></div>
-        <div class="line"><span>Bar sales</span><span>${money(d.totalBarSales)}</span></div>
-        <div class="line"><span>Tips earned</span><span>${money(d.totalTips)}</span></div>
-        <div class="line money neg"><span>Food tip-out</span><span>-${money(d.totalFoodTipOut)}</span></div>
-        <div class="line money neg"><span>Bar tip-out</span><span>-${money(d.totalBarTipOut)}</span></div>
-        <div class="line total ${moneyClass(d.totalNetTips)}"><span>You keep</span><span>${money(d.totalNetTips)}</span></div>
+        <div class="line"><span>Food sales</span><span>${money(d.TotalFoodSales)}</span></div>
+        <div class="line"><span>Bar sales</span><span>${money(d.TotalBarSales)}</span></div>
+        <div class="line"><span>Tips earned</span><span>${money(d.TotalTips)}</span></div>
+        <div class="line money neg"><span>Food tip-out</span><span>-${money(d.TotalFoodTipOut)}</span></div>
+        <div class="line money neg"><span>Bar tip-out</span><span>-${money(d.TotalBarTipOut)}</span></div>
+        <div class="line total ${moneyClass(d.totalNetTips)}"><span>You keep</span><span>${money(d.TotalNetTips)}</span></div>
         <p class="sub" style="margin-top:1rem;">${d.shifts.length} shift(s) in this range.</p>
       </div>`;
   }catch(err){

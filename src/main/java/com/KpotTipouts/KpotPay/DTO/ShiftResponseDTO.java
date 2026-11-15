@@ -7,6 +7,10 @@ import java.time.LocalDate;
 public record ShiftResponseDTO(
         Long id,
         LocalDate date,
+        BigDecimal kidsLunchSales,
+        BigDecimal kidsDinnerSales,
+        BigDecimal adultLunchSales,
+        BigDecimal adultDinnerSales,
         BigDecimal foodSales,
         BigDecimal barSales,
         BigDecimal hoursWorked,

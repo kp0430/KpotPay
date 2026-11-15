@@ -26,7 +26,7 @@ public class ShiftService {
 
     // amount you owe to restaurant based off food sales pretty much everything except bar drinks
     private BigDecimal calculateFoodTipOut(Shift shift) {
-        return shift.getFoodSales()
+        return calculateTotalFoodSales(shift)
                 .multiply(new BigDecimal("0.05"))
                 .setScale(2, RoundingMode.HALF_UP);
     }
@@ -42,6 +42,12 @@ public class ShiftService {
             return BigDecimal.ZERO;
         }
     }
+    private BigDecimal calculateTotalFoodSales(Shift shift) {
+        return (shift.getKidsLunchSales()
+                .add(shift.getKidsDinnerSales()
+                        .add(shift.getAdultLunchSales())
+                        .add(shift.getAdultDinnerSales())));
+    }
 
     private BigDecimal calculateTotalTipOut(Shift shift) {
         return calculateFoodTipOut(shift).add(calculateBarTipOut(shift))
@@ -55,7 +61,10 @@ public class ShiftService {
     public Shift createShift(ShiftCreateDTO shiftCreateDTO, User user) {
         Shift shift = new Shift();
         shift.setDate(shiftCreateDTO.date());
-        shift.setFoodSales(shiftCreateDTO.foodSales() != null ? shiftCreateDTO.foodSales() : BigDecimal.ZERO);
+        shift.setKidsLunchSales(shiftCreateDTO.kidsLunchSales() != null ? shiftCreateDTO.kidsLunchSales() : BigDecimal.ZERO);
+        shift.setKidsDinnerSales(shiftCreateDTO.kidsDinnerSales() != null ? shiftCreateDTO.kidsDinnerSales() : BigDecimal.ZERO);
+        shift.setAdultLunchSales(shiftCreateDTO.adultLunchSales() != null ? shiftCreateDTO.adultLunchSales(): BigDecimal.ZERO);
+        shift.setAdultDinnerSales(shiftCreateDTO.adultDinnerSales() != null ? shiftCreateDTO.adultDinnerSales() : BigDecimal.ZERO);
         shift.setBarSales(shiftCreateDTO.barSales() != null ? shiftCreateDTO.barSales() : BigDecimal.ZERO);
         shift.setHoursWorked(shiftCreateDTO.hoursWorked());
         shift.setRole(shiftCreateDTO.role());
@@ -69,7 +78,11 @@ public class ShiftService {
         return new ShiftResponseDTO(
                 shift.getId(),
                 shift.getDate(),
-                shift.getFoodSales(),
+                shift.getKidsLunchSales(),
+                shift.getKidsDinnerSales(),
+                shift.getAdultLunchSales(),
+                shift.getAdultDinnerSales(),
+                calculateTotalFoodSales(shift),
                 shift.getBarSales(),
                 shift.getHoursWorked(),
                 shift.getRole(),
@@ -83,11 +96,14 @@ public class ShiftService {
     // we are updating the shift with the shiftPatchDTO, if it's not null, patch the shift, if it is, just keep the shift variable the same
     public Shift applyPatch(Shift shift, ShiftPatchDTO shiftPatchDTO) {
         shift.setDate(shiftPatchDTO.date() != null ? shiftPatchDTO.date() : shift.getDate());
-        shift.setFoodSales(shiftPatchDTO.foodSales() != null ? shiftPatchDTO.foodSales() : shift.getFoodSales());
+        shift.setKidsLunchSales(shiftPatchDTO.kidsLunchSales() != null ? shiftPatchDTO.kidsLunchSales() : shift.getKidsLunchSales());
+        shift.setKidsDinnerSales(shiftPatchDTO.kidsDinnerSales() != null ? shiftPatchDTO.kidsDinnerSales() : shift.getKidsDinnerSales());
+        shift.setAdultLunchSales(shiftPatchDTO.adultLunchSales() != null ? shiftPatchDTO.adultLunchSales() : shift.getAdultLunchSales());
+        shift.setAdultDinnerSales(shiftPatchDTO.adultDinnerSales() != null ? shiftPatchDTO.adultDinnerSales(): shift.getAdultDinnerSales());
         shift.setBarSales(shiftPatchDTO.barSales() != null ? shiftPatchDTO.barSales() : shift.getBarSales());
         shift.setHoursWorked(shiftPatchDTO.hoursWorked() != null ? shiftPatchDTO.hoursWorked() : shift.getHoursWorked());
         shift.setRole(shiftPatchDTO.role() != null ? shiftPatchDTO.role() : shift.getRole());
-        shift.setTips(shiftPatchDTO.tips());
+        shift.setTips(shiftPatchDTO.tips() != null ? shiftPatchDTO.tips() : shift.getTips());
         return shiftRepository.save(shift);
     }
     public EarningsSummaryDTO getEarningsSummary(User user, LocalDate startDate, LocalDate endDate) {
@@ -102,7 +118,7 @@ public class ShiftService {
         BigDecimal totalTipOut = BigDecimal.ZERO;
 
         for(Shift shift : shifts){
-            totalFoodSales = totalFoodSales.add(shift.getFoodSales());
+            totalFoodSales = totalFoodSales.add(calculateTotalFoodSales(shift));
             totalBarSales = totalBarSales.add(shift.getBarSales());
             totalFoodTipOut = totalFoodTipOut.add(calculateFoodTipOut(shift));
             totalBarTipOut = totalBarTipOut.add(calculateBarTipOut(shift));

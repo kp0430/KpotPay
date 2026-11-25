@@ -12,7 +12,10 @@ public record ShiftPatchDTO(
         @PositiveOrZero BigDecimal kidsDinnerSales,
         @PositiveOrZero BigDecimal adultLunchSales,
         @PositiveOrZero BigDecimal adultDinnerSales,
-        @PositiveOrZero BigDecimal barSales,
+        @PositiveOrZero BigDecimal barBeverageSales,
+        @PositiveOrZero BigDecimal bobaSales,
+        @PositiveOrZero BigDecimal juiceSales,
+        //@PositiveOrZero BigDecimal barSales,
         @PositiveOrZero BigDecimal hoursWorked,
         Role role,
         @PositiveOrZero BigDecimal tips

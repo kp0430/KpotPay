@@ -33,7 +33,7 @@ public class ShiftService {
     // bar tipout as in the amount you owe to the restaurant from the bar
     private BigDecimal calculateBarTipOut(Shift shift) {
         if(shift.getRole().equals(Role.SERVER)){
-            return shift.getBarSales()
+            return calculateTotalBarSales(shift)
                     .multiply(new BigDecimal("0.10"))
                     .setScale(2, RoundingMode.HALF_UP);
         }
@@ -47,6 +47,11 @@ public class ShiftService {
                 .add(shift.getKidsDinnerSales()
                         .add(shift.getAdultLunchSales())
                         .add(shift.getAdultDinnerSales())));
+    }
+    private BigDecimal calculateTotalBarSales(Shift shift) {
+        return (shift.getBarBeverageSales()
+                .add(shift.getBobaSales())
+                .add(shift.getJuiceSales()));
     }
 
     private BigDecimal calculateTotalTipOut(Shift shift) {
@@ -65,7 +70,9 @@ public class ShiftService {
         shift.setKidsDinnerSales(shiftCreateDTO.kidsDinnerSales() != null ? shiftCreateDTO.kidsDinnerSales() : BigDecimal.ZERO);
         shift.setAdultLunchSales(shiftCreateDTO.adultLunchSales() != null ? shiftCreateDTO.adultLunchSales(): BigDecimal.ZERO);
         shift.setAdultDinnerSales(shiftCreateDTO.adultDinnerSales() != null ? shiftCreateDTO.adultDinnerSales() : BigDecimal.ZERO);
-        shift.setBarSales(shiftCreateDTO.barSales() != null ? shiftCreateDTO.barSales() : BigDecimal.ZERO);
+        shift.setBarBeverageSales(shiftCreateDTO.barBeverageSales() != null ? shiftCreateDTO.barBeverageSales() : BigDecimal.ZERO);
+        shift.setBobaSales(shiftCreateDTO.bobaSales() != null ? shiftCreateDTO.bobaSales() : BigDecimal.ZERO);
+        shift.setJuiceSales(shiftCreateDTO.juiceSales() != null ? shiftCreateDTO.juiceSales() : BigDecimal.ZERO);
         shift.setHoursWorked(shiftCreateDTO.hoursWorked());
         shift.setRole(shiftCreateDTO.role());
         shift.setUser(user);
@@ -83,7 +90,10 @@ public class ShiftService {
                 shift.getAdultLunchSales(),
                 shift.getAdultDinnerSales(),
                 calculateTotalFoodSales(shift),
-                shift.getBarSales(),
+                shift.getBarBeverageSales(),
+                shift.getBobaSales(),
+                shift.getJuiceSales(),
+                calculateTotalBarSales(shift),
                 shift.getHoursWorked(),
                 shift.getRole(),
                 calculateFoodTipOut(shift),
@@ -100,7 +110,9 @@ public class ShiftService {
         shift.setKidsDinnerSales(shiftPatchDTO.kidsDinnerSales() != null ? shiftPatchDTO.kidsDinnerSales() : shift.getKidsDinnerSales());
         shift.setAdultLunchSales(shiftPatchDTO.adultLunchSales() != null ? shiftPatchDTO.adultLunchSales() : shift.getAdultLunchSales());
         shift.setAdultDinnerSales(shiftPatchDTO.adultDinnerSales() != null ? shiftPatchDTO.adultDinnerSales(): shift.getAdultDinnerSales());
-        shift.setBarSales(shiftPatchDTO.barSales() != null ? shiftPatchDTO.barSales() : shift.getBarSales());
+        shift.setBarBeverageSales(shiftPatchDTO.barBeverageSales() != null ? shiftPatchDTO.barBeverageSales() : shift.getBarBeverageSales());
+        shift.setBobaSales(shiftPatchDTO.bobaSales() != null ? shiftPatchDTO.bobaSales() : shift.getBobaSales());
+        shift.setJuiceSales(shiftPatchDTO.juiceSales() != null ? shiftPatchDTO.juiceSales() : shift.getJuiceSales());
         shift.setHoursWorked(shiftPatchDTO.hoursWorked() != null ? shiftPatchDTO.hoursWorked() : shift.getHoursWorked());
         shift.setRole(shiftPatchDTO.role() != null ? shiftPatchDTO.role() : shift.getRole());
         shift.setTips(shiftPatchDTO.tips() != null ? shiftPatchDTO.tips() : shift.getTips());
@@ -119,7 +131,7 @@ public class ShiftService {
 
         for(Shift shift : shifts){
             totalFoodSales = totalFoodSales.add(calculateTotalFoodSales(shift));
-            totalBarSales = totalBarSales.add(shift.getBarSales());
+            totalBarSales = totalBarSales.add(calculateTotalBarSales(shift));
             totalFoodTipOut = totalFoodTipOut.add(calculateFoodTipOut(shift));
             totalBarTipOut = totalBarTipOut.add(calculateBarTipOut(shift));
             totalTipOut = totalTipOut.add(calculateTotalTipOut(shift));

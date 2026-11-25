@@ -36,7 +36,16 @@ private BigDecimal adultLunchSales;
 private BigDecimal adultDinnerSales;
 
 @Column(precision = 10, scale = 2, nullable = false)
-private BigDecimal barSales;
+@PositiveOrZero
+BigDecimal barBeverageSales;
+
+@Column(precision = 10, scale = 2, nullable = false)
+@PositiveOrZero
+BigDecimal bobaSales;
+
+@Column(precision = 10, scale = 2, nullable = false)
+@PositiveOrZero
+BigDecimal juiceSales;
 
 @Column(precision = 4, scale = 2, nullable = false)
 private BigDecimal hoursWorked;

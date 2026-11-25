@@ -1,3 +1,4 @@
+// local pages talk to the local backend; the deployed site talks to Railway
 const API_BASE = ["localhost", "127.0.0.1"].includes(location.hostname)
   ? "http://localhost:8080"
   : "https://kpotpay-production.up.railway.app";
@@ -16,6 +17,11 @@ function toCents(v){ return Math.round((parseFloat(v) || 0) * 100); }   // whole
 function foodTotalCents(){ return FOOD_IDS.reduce((sum, id) => sum + toCents($(id).value), 0); }
 function updateFoodTotal(){ $("foodTotal").textContent = (foodTotalCents() / 100).toFixed(2); }
 FOOD_IDS.forEach(id => $(id).addEventListener("input", updateFoodTotal));
+
+const BAR_IDS = ["f-bb", "f-bo", "f-ju"];
+function barTotalCents(){ return BAR_IDS.reduce((sum, id) => sum + toCents($(id).value), 0); }
+function updateBarTotal(){ $("barTotal").textContent = (barTotalCents() / 100).toFixed(2); }
+BAR_IDS.forEach(id => $(id).addEventListener("input", updateBarTotal));
 
 // every request to a protected endpoint goes through here so the token is always attached
 async function api(path, options = {}){
@@ -147,7 +153,10 @@ function editShift(id){
   $("f-al").value = s.adultLunchSales;
   $("f-ad").value = s.adultDinnerSales;
   updateFoodTotal();
-  $("f-bar").value = s.barSales;
+  $("f-bb").value = s.barBeverageSales;
+  $("f-bo").value = s.bobaSales;
+  $("f-ju").value = s.juiceSales;
+  updateBarTotal();
   $("f-tips").value = s.tips;
   $("submitBtn").textContent = "Save changes";
   $("cancelBtn").style.display = "inline-block";
@@ -157,8 +166,9 @@ function editShift(id){
 function resetForm(){
   editingId = null;
   $("formTitle").textContent = "Log a shift";
-  ["f-date","f-hours","f-bar","f-tips", ...FOOD_IDS].forEach(id => $(id).value = "");
+  ["f-date","f-hours","f-tips", ...FOOD_IDS, ...BAR_IDS].forEach(id => $(id).value = "");
   updateFoodTotal();
+  updateBarTotal();
   $("f-role").value = "SERVER";
   $("submitBtn").textContent = "Save shift";
   $("cancelBtn").style.display = "none";
@@ -174,7 +184,9 @@ async function submitShift(){
     kidsDinnerSales: $("f-kd").value || "0",
     adultLunchSales: $("f-al").value || "0",
     adultDinnerSales: $("f-ad").value || "0",
-    barSales: $("f-bar").value || "0",
+    barBeverageSales: $("f-bb").value || "0",
+    bobaSales: $("f-bo").value || "0",
+    juiceSales: $("f-ju").value || "0",
     tips: $("f-tips").value || "0",
   };
 
@@ -187,8 +199,9 @@ async function submitShift(){
     statusEl.className = "status error";
     return;
   }
-  const amounts = [body.hoursWorked, body.barSales, body.tips,
-    body.kidsLunchSales, body.kidsDinnerSales, body.adultLunchSales, body.adultDinnerSales];
+  const amounts = [body.hoursWorked, body.tips,
+    body.kidsLunchSales, body.kidsDinnerSales, body.adultLunchSales, body.adultDinnerSales,
+    body.barBeverageSales, body.bobaSales, body.juiceSales];
   if(amounts.some(v => v !== null && Number(v) < 0)){
     statusEl.textContent = "Amounts can't be negative.";
     statusEl.className = "status error";
@@ -242,7 +255,7 @@ async function getSummary(){
         <div class="line"><span>Tips earned</span><span>${money(d.TotalTips)}</span></div>
         <div class="line money neg"><span>Food tip-out</span><span>-${money(d.TotalFoodTipOut)}</span></div>
         <div class="line money neg"><span>Bar tip-out</span><span>-${money(d.TotalBarTipOut)}</span></div>
-        <div class="line total ${moneyClass(d.totalNetTips)}"><span>You keep</span><span>${money(d.TotalNetTips)}</span></div>
+        <div class="line total ${moneyClass(d.TotalNetTips)}"><span>You keep</span><span>${money(d.TotalNetTips)}</span></div>
         <p class="sub" style="margin-top:1rem;">${d.shifts.length} shift(s) in this range.</p>
       </div>`;
   }catch(err){

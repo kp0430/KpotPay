@@ -13,7 +13,10 @@ public record ShiftCreateDTO(
         @PositiveOrZero BigDecimal kidsDinnerSales,
         @PositiveOrZero BigDecimal adultLunchSales,
         @PositiveOrZero BigDecimal adultDinnerSales,
-        @PositiveOrZero BigDecimal barSales,
+        @PositiveOrZero BigDecimal barBeverageSales,
+        @PositiveOrZero BigDecimal bobaSales,
+        @PositiveOrZero BigDecimal juiceSales,
+        //@PositiveOrZero BigDecimal barSales,
         @NotNull @PositiveOrZero BigDecimal hoursWorked,
         @NotNull Role role,
         @PositiveOrZero BigDecimal tips

@@ -3,15 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tip Ledger</title>
+<title>K-Pot Pay</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="wrap">
-  <h1>Tip Ledger</h1>
-  <p class="sub">Log shifts, track tip-out owed, and check pay for any date range.</p>
+  <header class="brand">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+      <path class="steam s1" d="M22 20c-5-5 5-8 0-14"/>
+      <path class="steam s2" d="M32 20c-5-5 5-8 0-14"/>
+      <path class="steam s3" d="M42 20c-5-5 5-8 0-14"/>
+      <path class="pot" d="M8 30h48c0 15-9 26-24 26S8 45 8 30z"/>
+      <rect class="pot" x="4" y="26" width="56" height="6" rx="3"/>
+    </svg>
+    <div>
+      <h1>K-Pot Pay</h1>
+      <p class="sub">Track your tip-outs and find your estimated pay.</p>
+    </div>
+  </header>
 
   <section id="authView" class="panel" style="margin-top:2rem;">
     <h2 id="authTitle">Log in</h2>
@@ -71,10 +82,10 @@
 
     <div class="panel">
       <h2>Shifts</h2>
-      <table>
+      <div class="tablewrap"><table>
         <thead><tr><th>Date</th><th>Role</th><th>Food</th><th>Bar</th><th>Tips</th><th>Tip-out</th><th>Net</th><th></th></tr></thead>
         <tbody id="shiftsBody"></tbody>
-      </table>
+      </table></div>
       <div id="shiftsEmpty" class="empty" style="display:none;">No shifts yet.</div>
       <div id="listStatus" class="status"></div>
     </div>
